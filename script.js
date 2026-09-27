@@ -275,13 +275,130 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      /* ---------- RESCHEDULE ---------- */
+           /* ---------- RESCHEDULE ---------- */
       if (state.screen === 'reschedule-ask-id') {
         container.appendChild(el('p', 'demo-message', 'Do you have your appointment ID?'));
-        container.appendChild(optionButtons(['Yes', 'No'], function () {
-          state.screen = 'reschedule-current';
+
+        container.appendChild(optionButtons(['Yes', 'No'], function (answer) {
+          if (answer === 'Yes') {
+            state.screen = 'reschedule-current';
+          } else {
+            state.screen = 'reschedule-noid-details';
+          }
+
           render();
         }));
+
+        return;
+      }
+
+      if (state.screen === 'reschedule-noid-details') {
+        container.appendChild(
+          el(
+            'p',
+            'demo-message',
+            'No problem. I can help retrieve your appointment using other information.'
+          )
+        );
+
+        var useSampleBtnReschedule = el(
+          'button',
+          'btn btn-primary',
+          'Use Sample Patient Details →'
+        );
+
+        useSampleBtnReschedule.type = 'button';
+
+        useSampleBtnReschedule.addEventListener('click', function () {
+          state.patientName = 'Demo Patient';
+          state.patientEmail = 'patient@example.com';
+          state.patientPhone = '0800 000 0000';
+
+          state.screen = 'reschedule-noid-review';
+          render();
+        });
+
+        container.appendChild(useSampleBtnReschedule);
+        return;
+      }
+
+      if (state.screen === 'reschedule-noid-review') {
+        container.appendChild(
+          el(
+            'p',
+            'demo-message',
+            'Here are the sample patient details I’ll use to search:'
+          )
+        );
+
+        container.appendChild(
+          resultCard('Patient Details', [
+            ['Name', state.patientName],
+            ['Email', state.patientEmail],
+            ['Phone', state.patientPhone]
+          ])
+        );
+
+        var findBtnReschedule = el(
+          'button',
+          'btn btn-primary',
+          'Find Appointment →'
+        );
+
+        findBtnReschedule.type = 'button';
+
+        findBtnReschedule.addEventListener('click', function () {
+          state.screen = 'reschedule-noid-processing';
+          render();
+
+          setTimeout(function () {
+            if (state.screen === 'reschedule-noid-processing') {
+              state.screen = 'reschedule-noid-found';
+              render();
+            }
+          }, 900);
+        });
+
+        container.appendChild(findBtnReschedule);
+        return;
+      }
+
+      if (state.screen === 'reschedule-noid-processing') {
+        container.appendChild(
+          el('p', 'demo-processing', 'Finding your appointment…')
+        );
+
+        return;
+      }
+
+      if (state.screen === 'reschedule-noid-found') {
+        container.appendChild(
+          el('p', 'demo-result-heading', '✓ Appointment Found')
+        );
+
+        container.appendChild(
+          resultCard('Appointment', [
+            ['Appointment ID', state.appointmentId],
+            ['Patient', 'Demo Patient'],
+            ['Department', state.existingDepartment],
+            ['Date', state.existingDate],
+            ['Time', state.existingTime],
+            ['Status', 'Confirmed', 'demo-status-confirmed']
+          ])
+        );
+
+        container.appendChild(
+          el('p', 'demo-message', 'Choose a new date:')
+        );
+
+        container.appendChild(
+          optionButtons(getSampleFutureDates(), function (date) {
+            state.newDate = date;
+            state.screen = 'reschedule-time';
+            render();
+          })
+        );
+
         return;
       }
 
@@ -361,14 +478,135 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      /* ---------- CANCEL ---------- */
+            /* ---------- CANCEL ---------- */
       if (state.screen === 'cancel-ask-id') {
         container.appendChild(el('p', 'demo-message', 'Do you have your appointment ID?'));
-        container.appendChild(optionButtons(['Yes', 'No'], function () {
-          state.appointmentStatus = 'Confirmed';
-          state.screen = 'cancel-show';
+
+        container.appendChild(optionButtons(['Yes', 'No'], function (answer) {
+          if (answer === 'Yes') {
+            state.appointmentStatus = 'Confirmed';
+            state.screen = 'cancel-show';
+          } else {
+            state.screen = 'cancel-noid-details';
+          }
+
           render();
         }));
+
+        return;
+      }
+
+      if (state.screen === 'cancel-noid-details') {
+        container.appendChild(
+          el(
+            'p',
+            'demo-message',
+            'No problem. I can help retrieve your appointment using other information.'
+          )
+        );
+
+        var useSampleBtnCancel = el(
+          'button',
+          'btn btn-primary',
+          'Use Sample Patient Details →'
+        );
+
+        useSampleBtnCancel.type = 'button';
+
+        useSampleBtnCancel.addEventListener('click', function () {
+          state.patientName = 'Demo Patient';
+          state.patientEmail = 'patient@example.com';
+          state.patientPhone = '0800 000 0000';
+
+          state.screen = 'cancel-noid-review';
+          render();
+        });
+
+        container.appendChild(useSampleBtnCancel);
+        return;
+      }
+
+      if (state.screen === 'cancel-noid-review') {
+        container.appendChild(
+          el(
+            'p',
+            'demo-message',
+            'Here are the sample patient details I’ll use to search:'
+          )
+        );
+
+        container.appendChild(
+          resultCard('Patient Details', [
+            ['Name', state.patientName],
+            ['Email', state.patientEmail],
+            ['Phone', state.patientPhone]
+          ])
+        );
+
+        var findBtnCancel = el(
+          'button',
+          'btn btn-primary',
+          'Find Appointment →'
+        );
+
+        findBtnCancel.type = 'button';
+
+        findBtnCancel.addEventListener('click', function () {
+          state.screen = 'cancel-noid-processing';
+          render();
+
+          setTimeout(function () {
+            if (state.screen === 'cancel-noid-processing') {
+              state.screen = 'cancel-noid-found';
+              render();
+            }
+          }, 900);
+        });
+
+        container.appendChild(findBtnCancel);
+        return;
+      }
+
+      if (state.screen === 'cancel-noid-processing') {
+        container.appendChild(
+          el('p', 'demo-processing', 'Finding your appointment…')
+        );
+
+        return;
+      }
+
+      if (state.screen === 'cancel-noid-found') {
+        container.appendChild(
+          el('p', 'demo-result-heading', '✓ Appointment Found')
+        );
+
+        container.appendChild(
+          resultCard('Appointment', [
+            ['Appointment ID', state.appointmentId],
+            ['Patient', 'Demo Patient'],
+            ['Department', state.existingDepartment],
+            ['Date', state.existingDate],
+            ['Time', state.existingTime],
+            ['Status', 'Confirmed', 'demo-status-confirmed']
+          ])
+        );
+
+        state.appointmentStatus = 'Confirmed';
+
+        var cancelBtnFromFound = el(
+          'button',
+          'btn btn-primary',
+          'Cancel This Appointment'
+        );
+
+        cancelBtnFromFound.type = 'button';
+
+        cancelBtnFromFound.addEventListener('click', function () {
+          state.screen = 'cancel-confirm';
+          render();
+        });
+
+        container.appendChild(cancelBtnFromFound);
         return;
       }
 
