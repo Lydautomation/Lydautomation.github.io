@@ -686,19 +686,103 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      /* ---------- RETRIEVE ---------- */
+            /* ---------- RETRIEVE ---------- */
       if (state.screen === 'retrieve-ask-id') {
-        container.appendChild(el('p', 'demo-message', 'Do you have your appointment ID?'));
-        container.appendChild(optionButtons(['Yes', 'No'], function () {
+        container.appendChild(
+          el('p', 'demo-message', 'Do you have your appointment ID?')
+        );
+
+        container.appendChild(
+          optionButtons(['Yes', 'No'], function (answer) {
+            if (answer === 'Yes') {
+              state.screen = 'retrieve-processing';
+              render();
+
+              setTimeout(function () {
+                if (state.screen === 'retrieve-processing') {
+                  state.screen = 'retrieve-found';
+                  render();
+                }
+              }, 900);
+
+            } else {
+              state.screen = 'retrieve-noid-details';
+              render();
+            }
+          })
+        );
+
+        return;
+      }
+
+      if (state.screen === 'retrieve-noid-details') {
+        container.appendChild(
+          el(
+            'p',
+            'demo-message',
+            'No problem. I can help retrieve your appointment using other information.'
+          )
+        );
+
+        var useSampleBtnRetrieve = el(
+          'button',
+          'btn btn-primary',
+          'Use Sample Patient Details →'
+        );
+
+        useSampleBtnRetrieve.type = 'button';
+
+        useSampleBtnRetrieve.addEventListener('click', function () {
+          state.patientName = 'Demo Patient';
+          state.patientEmail = 'patient@example.com';
+          state.patientPhone = '0800 000 0000';
+
+          state.screen = 'retrieve-noid-review';
+          render();
+        });
+
+        container.appendChild(useSampleBtnRetrieve);
+        return;
+      }
+
+      if (state.screen === 'retrieve-noid-review') {
+        container.appendChild(
+          el(
+            'p',
+            'demo-message',
+            'Here are the sample patient details I’ll use to search:'
+          )
+        );
+
+        container.appendChild(
+          resultCard('Patient Details', [
+            ['Name', state.patientName],
+            ['Email', state.patientEmail],
+            ['Phone', state.patientPhone]
+          ])
+        );
+
+        var findBtnRetrieve = el(
+          'button',
+          'btn btn-primary',
+          'Find Appointment →'
+        );
+
+        findBtnRetrieve.type = 'button';
+
+        findBtnRetrieve.addEventListener('click', function () {
           state.screen = 'retrieve-processing';
           render();
+
           setTimeout(function () {
             if (state.screen === 'retrieve-processing') {
               state.screen = 'retrieve-found';
               render();
             }
           }, 900);
-        }));
+        });
+
+        container.appendChild(findBtnRetrieve);
         return;
       }
 
