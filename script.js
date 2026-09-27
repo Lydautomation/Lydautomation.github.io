@@ -1208,7 +1208,7 @@ phoneNumber.value = '0800 000 0000';
      does not submit data anywhere. Replace WEBHOOK_URL below once
      the workflow is ready, and uncomment the fetch() call.
      ========================================================= */
-  var WEBHOOK_URL = ''; // <-- Insert your n8n production webhook URL here when ready.
+  var WEBHOOK_URL = 'https://lydautomation-n8n.duckdns.org/webhook/website-enquiry';
 
   var enquiryForm = document.getElementById('enquiryForm');
   if (enquiryForm) {
@@ -1283,30 +1283,55 @@ phoneNumber.value = '0800 000 0000';
         return;
       }
 
-      // Form is valid. The workflow is not connected yet, so we do not
-      // send data anywhere and do not claim the enquiry was received.
-      //
-      // Once WEBHOOK_URL is set, replace the block below with:
-      //
-      // fetch(WEBHOOK_URL, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     fullName: fullName.value,
-      //     email: email.value,
-      //     companyOrg: document.getElementById('companyOrg').value,
-      //     describesYou: describesYou.value,
-      //     lookingFor: lookingFor.value,
-      //     toolsUsed: document.getElementById('toolsUsed').value,
-      //     manualProcess: document.getElementById('manualProcess').value,
-      //     workloadEstimate: window.__workloadEstimate || null
-      //   })
-      // }).then(...);
+            var submitButton = enquiryForm.querySelector('button[type="submit"]');
+
+      if (submitButton) {
+        submitButton.disabled = true;
+      }
 
       formStatus.style.background = '';
       formStatus.style.color = '';
-      formStatus.textContent = 'The enquiry form is ready. Submission will be enabled once the automation workflow is connected.';
-    });
-  }
+      formStatus.textContent = 'Sending your enquiry…';
 
-});
+      fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          fullName: fullName.value.trim(),
+          email: email.value.trim(),
+          companyOrg: document.getElementById('companyOrg').value.trim(),
+          describesYou: describesYou.value,
+          lookingFor: lookingFor.value,
+          toolsUsed: document.getElementById('toolsUsed').value.trim(),
+          manualProcess: document.getElementById('manualProcess').value.trim(),
+          automationGoal: document.getElementById('automationGoal').value.trim(),
+          workloadEstimate: window.__workloadEstimate || null
+        })
+      })
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error('Request failed');
+          }
+
+          formStatus.style.background = '#E9F8FA';
+          formStatus.style.color = '#000052';
+          formStatus.textContent = 'Thank you — your enquiry has been received. I’ll be in touch soon.';
+
+          enquiryForm.reset();
+
+          if (window.__workloadEstimate) {
+            window.__workloadEstimate = null;
+          }
+        })
+        .catch(function () {
+          formStatus.style.background = '#FDEBEA';
+          formStatus.style.color = '#B3271E';
+          formStatus.textContent = 'Something went wrong sending your enquiry. Please try again, or email Lydiaogbeneodey@gmail.com directly.';
+        })
+        .finally(function () {
+          if (submitButton) {
+            submitButton.disabled = false;
+          }
+        });
