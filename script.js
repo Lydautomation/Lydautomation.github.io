@@ -1201,13 +1201,9 @@ phoneNumber.value = '0800 000 0000';
   }
 
   /* =========================================================
-     WORK WITH ME — ENQUIRY FORM
-     =========================================================
-     NOTE: The n8n automation workflow for this form has not been
-     connected yet. This form validates fully on the frontend but
-     does not submit data anywhere. Replace WEBHOOK_URL below once
-     the workflow is ready, and uncomment the fetch() call.
-     ========================================================= */
+   WORK WITH ME — ENQUIRY FORM
+   Connected to the LydAutomation n8n enquiry workflow.
+   ========================================================= */
   var WEBHOOK_URL = 'https://lydautomation-n8n.duckdns.org/webhook/website-enquiry';
 
   var enquiryForm = document.getElementById('enquiryForm');
@@ -1335,3 +1331,7 @@ phoneNumber.value = '0800 000 0000';
             submitButton.disabled = false;
           }
         });
+           });
+  }
+
+});
