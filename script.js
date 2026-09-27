@@ -913,10 +913,21 @@ document.addEventListener('DOMContentLoaded', function () {
         return wrap;
       }
 
-      var companyName = document.createElement('input'); companyName.type = 'text';
-      var contactPerson = document.createElement('input'); contactPerson.type = 'text';
-      var emailAddress = document.createElement('input'); emailAddress.type = 'email';
-      var phoneNumber = document.createElement('input'); phoneNumber.type = 'text';
+      var companyName = document.createElement('input');
+companyName.type = 'text';
+companyName.value = 'Northstar Technologies';
+
+var contactPerson = document.createElement('input');
+contactPerson.type = 'text';
+contactPerson.value = 'Demo Prospect';
+
+var emailAddress = document.createElement('input');
+emailAddress.type = 'email';
+emailAddress.value = 'prospect@example.com';
+
+var phoneNumber = document.createElement('input');
+phoneNumber.type = 'text';
+phoneNumber.value = '0800 000 0000';
 
       var serviceRequired = document.createElement('select');
       serviceRequired.appendChild(new Option('Select a service', ''));
