@@ -939,6 +939,18 @@ input[type="range"] {
   .header-inner { padding: 16px 20px; }
   body { font-size: 16px; }
 
+  .about-award {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    margin-top: 36px;
+    padding-top: 28px;
+  }
+
+  .about-award-badge img {
+    width: 160px;
+  }
+
   .hero { padding: 56px 0 64px; }
   .hero-inner { grid-template-columns: 1fr; }
   .hero-portrait { order: -1; margin-bottom: 8px; }
