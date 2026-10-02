@@ -1207,8 +1207,27 @@ phoneNumber.value = '0800 000 0000';
   var WEBHOOK_URL = 'https://lydautomation-n8n.duckdns.org/webhook/website-enquiry';
 
   var enquiryForm = document.getElementById('enquiryForm');
-  if (enquiryForm) {
-    var formStatus = document.getElementById('formStatus');
+if (enquiryForm) {
+  var formStatus = document.getElementById('formStatus');
+
+  // International phone field
+  var phoneInput = document.getElementById('phone');
+  var iti = null;
+
+  if (phoneInput && window.intlTelInput) {
+    iti = window.intlTelInput(phoneInput, {
+      initialCountry: 'ng',
+      preferredCountries: ['ng', 'gb', 'us', 'ca', 'gh'],
+      separateDialCode: true,
+      utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js'
+    });
+  }
+
+  function isPhoneValid() {
+    if (!phoneInput || !phoneInput.value.trim()) return false;
+    if (!iti) return false;
+    return iti.isValidNumber();
+  }
 
     function setFieldError(fieldId, errorId, message) {
       var field = document.getElementById(fieldId);
