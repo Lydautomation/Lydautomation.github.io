@@ -1277,12 +1277,19 @@ if (enquiryForm) {
         setFieldError('email', 'emailError', '');
       }
 
-      if (!describesYou.value) {
-        setFieldError('describesYou', 'describesYouError', 'Please select an option.');
-        isValid = false;
-      } else {
-        setFieldError('describesYou', 'describesYouError', '');
-      }
+      if (!isPhoneValid()) {
+  setFieldError('phone', 'phoneError', 'Please enter a valid phone number.');
+  isValid = false;
+} else {
+  setFieldError('phone', 'phoneError', '');
+}
+
+if (!describesYou.value) {
+  setFieldError('describesYou', 'describesYouError', 'Please select an option.');
+  isValid = false;
+} else {
+  setFieldError('describesYou', 'describesYouError', '');
+}
 
       if (!lookingFor.value) {
         setFieldError('lookingFor', 'lookingForError', 'Please select an option.');
