@@ -348,6 +348,12 @@
         </div>
 
         <div class="form-row">
+          <label for="phone">Phone Number <span aria-hidden="true">*</span></label>
+          <input type="tel" id="phone" name="phone" required>
+          <p class="field-error" id="phoneError"></p>
+        </div>
+
+        <div class="form-row">
           <label for="companyOrg">Company / Organization</label>
           <input type="text" id="companyOrg" name="companyOrg">
         </div>
@@ -388,16 +394,16 @@
         </div>
 
         <div class="form-row">
-  <label for="manualProcess">What process is currently being done manually?</label>
-  <textarea id="manualProcess" name="manualProcess" rows="4"></textarea>
-  <p class="field-help">Describe the current manual process you want to improve.</p>
-</div>
+          <label for="manualProcess">What process is currently being done manually?</label>
+          <textarea id="manualProcess" name="manualProcess" rows="4"></textarea>
+          <p class="field-help">Describe the current manual process you want to improve.</p>
+        </div>
 
-<div class="form-row">
-  <label for="automationGoal">What would you like to automate or improve?</label>
-  <textarea id="automationGoal" name="automationGoal" rows="4"></textarea>
-  <p class="field-help">Tell me what outcome you would like the automation to achieve.</p>
-</div>
+        <div class="form-row">
+          <label for="automationGoal">What would you like to automate or improve?</label>
+          <textarea id="automationGoal" name="automationGoal" rows="4"></textarea>
+          <p class="field-help">Tell me what outcome you would like the automation to achieve.</p>
+        </div>
 
         <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
 
