@@ -1215,13 +1215,16 @@ if (enquiryForm) {
   var iti = null;
 
   if (phoneInput && window.intlTelInput) {
-    iti = window.intlTelInput(phoneInput, {
-      initialCountry: 'ng',
-      preferredCountries: ['ng', 'gb', 'us', 'ca', 'gh'],
-      separateDialCode: true,
-      utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js'
-    });
-  }
+  iti = window.intlTelInput(phoneInput, {
+    initialCountry: 'ng',
+    preferredCountries: ['ng', 'gb', 'us', 'ca', 'gh'],
+    separateDialCode: true,
+    autoPlaceholder: 'off',
+    utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js'
+  });
+
+  phoneInput.removeAttribute('placeholder');
+}
 
   function isPhoneValid() {
     if (!phoneInput || !phoneInput.value.trim()) return false;
