@@ -1321,21 +1321,22 @@ if (!describesYou.value) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          fullName: fullName.value.trim(),
-          email: email.value.trim(),
-          companyOrg: document.getElementById('companyOrg').value.trim(),
-          describesYou: describesYou.value,
-          lookingFor: lookingFor.value,
-          toolsUsed: document.getElementById('toolsUsed').value.trim(),
-          manualProcess: document.getElementById('manualProcess').value.trim(),
-          automationGoal: document.getElementById('automationGoal').value.trim(),
-          workloadEstimate: window.__workloadEstimate || null
-        })
-      })
-        .then(function (response) {
-          if (!response.ok) {
-            throw new Error('Request failed');
-          }
+  fullName: fullName.value.trim(),
+  email: email.value.trim(),
+  phone: (iti && phoneInput && phoneInput.value.trim()) ? iti.getNumber() : '',
+  companyOrg: document.getElementById('companyOrg').value.trim(),
+  describesYou: describesYou.value,
+  lookingFor: lookingFor.value,
+  toolsUsed: document.getElementById('toolsUsed').value.trim(),
+  manualProcess: document.getElementById('manualProcess').value.trim(),
+  automationGoal: document.getElementById('automationGoal').value.trim(),
+  workloadEstimate: window.__workloadEstimate || null
+})
+})
+ .then(function (response) {
+  if (!response.ok) {
+    throw new Error('Request failed');
+  }
 
           formStatus.style.background = '#E9F8FA';
           formStatus.style.color = '#000052';
