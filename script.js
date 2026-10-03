@@ -1810,7 +1810,9 @@ var submitButton = enquiryForm.querySelector(
       },
 
       body: JSON.stringify({
-        fullName: fullName.value.trim(),
+  submissionId: currentSubmissionId,
+
+  fullName: fullName.value.trim(),
 
         email: email.value.trim(),
 
@@ -1887,10 +1889,16 @@ var submitButton = enquiryForm.querySelector(
 
         enquiryForm.reset();
 
-        /*
-          Reset all conditional sections after successful submission.
-        */
-        updateEnquiryFields();
+/*
+  The enquiry was successfully received.
+  Clear the submission ID so the next enquiry gets a new one.
+*/
+currentSubmissionId = '';
+
+/*
+  Reset all conditional sections after successful submission.
+*/
+updateEnquiryFields();
 
         // Reset phone progress
         lastAcceptedPhoneValue = '';
