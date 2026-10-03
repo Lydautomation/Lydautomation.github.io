@@ -1200,7 +1200,7 @@ phoneNumber.value = '0800 000 0000';
     });
   }
 
-  /* =========================================================
+ /* =========================================================
    WORK WITH ME — ENQUIRY FORM
    Connected to the LydAutomation n8n enquiry workflow.
    ========================================================= */
@@ -1210,6 +1210,22 @@ var enquiryForm = document.getElementById('enquiryForm');
 
 if (enquiryForm) {
   var formStatus = document.getElementById('formStatus');
+
+  /* =========================================================
+     FORM FIELDS
+     ========================================================= */
+  var fullName = document.getElementById('fullName');
+  var email = document.getElementById('email');
+  var companyOrg = document.getElementById('companyOrg');
+  var describesYou = document.getElementById('describesYou');
+  var lookingFor = document.getElementById('lookingFor');
+  var budget = document.getElementById('budget');
+  var currency = document.getElementById('currency');
+  var budgetCurrencyFields = document.getElementById('budgetCurrencyFields');
+  var toolsUsed = document.getElementById('toolsUsed');
+  var manualProcess = document.getElementById('manualProcess');
+  var automationGoal = document.getElementById('automationGoal');
+  var leadSource = document.getElementById('leadSource');
 
   /* =========================================================
      INTERNATIONAL PHONE FIELD
@@ -1300,8 +1316,6 @@ if (enquiryForm) {
         Nigeria:
         +234 is already shown separately,
         so remove the local leading 0.
-        Example:
-        08190876543 -> 8190876543
       */
       if (
         selectedCountry &&
@@ -1311,10 +1325,6 @@ if (enquiryForm) {
         digitsOnly = digitsOnly.substring(1);
       }
 
-      /*
-        Stop the user from entering more digits than the
-        expected national mobile-number length.
-      */
       if (
         expectedNationalLength &&
         digitsOnly.length > expectedNationalLength
@@ -1324,11 +1334,6 @@ if (enquiryForm) {
 
       phoneInput.value = digitsOnly;
 
-      /*
-        Extra protection:
-        If the phone library identifies the number as too long,
-        restore the last accepted value.
-      */
       if (
         window.intlTelInputUtils &&
         iti.getValidationError() ===
@@ -1393,43 +1398,71 @@ if (enquiryForm) {
   }
 
   /* =========================================================
-   FORM SUBMISSION
-   ========================================================= */
+     CONDITIONAL BUDGET + CURRENCY
+     ========================================================= */
 
-// Budget — allow digits only while typing
-var budgetInput = document.getElementById('budget');
+  var paidServiceOptions = [
+    'Health Tech Automation',
+    'Sales & CRM Automation',
+    'AI Agent',
+    'Workflow Automation',
+    'System Integration'
+  ];
 
-if (budgetInput) {
-  budgetInput.addEventListener('input', function () {
-    budgetInput.value = budgetInput.value.replace(/\D/g, '');
-  });
-}
-
-enquiryForm.addEventListener('submit', function (e) {
-  e.preventDefault();
-
-  // Honeypot spam check
-  var honeypot = document.getElementById('website');
-
-  if (honeypot && honeypot.value.trim() !== '') {
-    formStatus.textContent = '';
-    return;
+  function requiresBudget(value) {
+    return paidServiceOptions.indexOf(value) !== -1;
   }
 
-    // Form fields
-    var fullName = document.getElementById('fullName');
-    var email = document.getElementById('email');
-    var companyOrg = document.getElementById('companyOrg');
-    var describesYou = document.getElementById('describesYou');
-    var lookingFor = document.getElementById('lookingFor');
-    var budget = document.getElementById('budget');
-    var currency = document.getElementById('currency');
-    var toolsUsed = document.getElementById('toolsUsed');
-    var manualProcess = document.getElementById('manualProcess');
-    var automationGoal = document.getElementById('automationGoal');
-    var leadSource = document.getElementById('leadSource');
+  function updateBudgetCurrencyFields() {
+    var shouldShowBudget = requiresBudget(lookingFor.value);
+
+    if (shouldShowBudget) {
+      budgetCurrencyFields.hidden = false;
+
+      budget.required = true;
+      currency.required = true;
+    } else {
+      budgetCurrencyFields.hidden = true;
+
+      budget.required = false;
+      currency.required = false;
+
+      budget.value = '';
+      currency.value = '';
+
+      setFieldError('budget', 'budgetError', '');
+      setFieldError('currency', 'currencyError', '');
+    }
+  }
+
+  lookingFor.addEventListener('change', updateBudgetCurrencyFields);
+
+  // Make sure the correct state is applied when the page loads.
+  updateBudgetCurrencyFields();
+
+  /* =========================================================
+     BUDGET — DIGITS ONLY
+     ========================================================= */
+  budget.addEventListener('input', function () {
+    budget.value = budget.value.replace(/\D/g, '');
+  });
+
+  /* =========================================================
+     FORM SUBMISSION
+     ========================================================= */
+  enquiryForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    // Honeypot spam check
+    var honeypot = document.getElementById('website');
+
+    if (honeypot && honeypot.value.trim() !== '') {
+      formStatus.textContent = '';
+      return;
+    }
 
     var isValid = true;
+    var budgetIsRequired = requiresBudget(lookingFor.value);
 
     // Full Name
     if (!fullName.value.trim()) {
@@ -1504,38 +1537,40 @@ enquiryForm.addEventListener('submit', function (e) {
     }
 
     /*
-      Budget:
-      Must contain digits only.
-      Accepted: 500000
-      Rejected: ₦500000, $500000, 500,000, 500k
+      Budget and Currency are required ONLY
+      for paid service enquiries.
     */
-    if (!budget.value.trim()) {
-      setFieldError(
-        'budget',
-        'budgetError',
-        'Please enter your budget.'
-      );
-      isValid = false;
-    } else if (!/^\d+$/.test(budget.value.trim())) {
-      setFieldError(
-        'budget',
-        'budgetError',
-        'Please enter numbers only, without currency signs or commas.'
-      );
-      isValid = false;
+    if (budgetIsRequired) {
+      if (!budget.value.trim()) {
+        setFieldError(
+          'budget',
+          'budgetError',
+          'Please enter your budget.'
+        );
+        isValid = false;
+      } else if (!/^\d+$/.test(budget.value.trim())) {
+        setFieldError(
+          'budget',
+          'budgetError',
+          'Please enter numbers only, without currency signs or commas.'
+        );
+        isValid = false;
+      } else {
+        setFieldError('budget', 'budgetError', '');
+      }
+
+      if (!currency.value) {
+        setFieldError(
+          'currency',
+          'currencyError',
+          'Please select a currency.'
+        );
+        isValid = false;
+      } else {
+        setFieldError('currency', 'currencyError', '');
+      }
     } else {
       setFieldError('budget', 'budgetError', '');
-    }
-
-    // Currency
-    if (!currency.value) {
-      setFieldError(
-        'currency',
-        'currencyError',
-        'Please select a currency.'
-      );
-      isValid = false;
-    } else {
       setFieldError('currency', 'currencyError', '');
     }
 
@@ -1607,12 +1642,14 @@ enquiryForm.addEventListener('submit', function (e) {
 
     fetch(WEBHOOK_URL, {
       method: 'POST',
+
       headers: {
         'Content-Type': 'application/json'
       },
 
       body: JSON.stringify({
         fullName: fullName.value.trim(),
+
         email: email.value.trim(),
 
         phone:
@@ -1621,15 +1658,34 @@ enquiryForm.addEventListener('submit', function (e) {
             : '',
 
         companyOrg: companyOrg.value.trim(),
+
         describesYou: describesYou.value,
+
         lookingFor: lookingFor.value,
 
-        budget: budget.value.trim(),
-        currency: currency.value,
+        /*
+          Paid service:
+          budget = "500000"
+          currency = "NGN"
+
+          Collaboration / Job / Other:
+          budget = ""
+          currency = ""
+        */
+        budget: budgetIsRequired
+          ? budget.value.trim()
+          : '',
+
+        currency: budgetIsRequired
+          ? currency.value
+          : '',
 
         toolsUsed: toolsUsed.value.trim(),
+
         manualProcess: manualProcess.value.trim(),
+
         automationGoal: automationGoal.value.trim(),
+
         leadSource: leadSource.value,
 
         workloadEstimate: window.__workloadEstimate || null
@@ -1647,7 +1703,13 @@ enquiryForm.addEventListener('submit', function (e) {
 
         enquiryForm.reset();
 
-        // Reset phone progress after successful submission
+        /*
+          After resetting the form:
+          hide Budget + Currency again.
+        */
+        updateBudgetCurrencyFields();
+
+        // Reset phone progress
         lastAcceptedPhoneValue = '';
 
         if (phoneProgressBar) {
@@ -1664,12 +1726,13 @@ enquiryForm.addEventListener('submit', function (e) {
         formStatus.textContent =
           'Something went wrong sending your enquiry. Please try again, or email Lydiaogbeneodey@gmail.com directly.';
       })
-  .finally(function () {
-    if (submitButton) {
-      submitButton.disabled = false;
-    }
+      .finally(function () {
+        if (submitButton) {
+          submitButton.disabled = false;
+       }
+      });
   });
-});
 }
 
 });
+   
