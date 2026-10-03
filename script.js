@@ -1393,18 +1393,28 @@ if (enquiryForm) {
   }
 
   /* =========================================================
-     FORM SUBMISSION
-     ========================================================= */
-  enquiryForm.addEventListener('submit', function (e) {
-    e.preventDefault();
+   FORM SUBMISSION
+   ========================================================= */
 
-    // Honeypot spam check
-    var honeypot = document.getElementById('website');
+// Budget — allow digits only while typing
+var budgetInput = document.getElementById('budget');
 
-    if (honeypot && honeypot.value.trim() !== '') {
-      formStatus.textContent = '';
-      return;
-    }
+if (budgetInput) {
+  budgetInput.addEventListener('input', function () {
+    budgetInput.value = budgetInput.value.replace(/\D/g, '');
+  });
+}
+
+enquiryForm.addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  // Honeypot spam check
+  var honeypot = document.getElementById('website');
+
+  if (honeypot && honeypot.value.trim() !== '') {
+    formStatus.textContent = '';
+    return;
+  }
 
     // Form fields
     var fullName = document.getElementById('fullName');
