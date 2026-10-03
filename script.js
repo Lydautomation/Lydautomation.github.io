@@ -1212,6 +1212,28 @@ if (enquiryForm) {
   var formStatus = document.getElementById('formStatus');
 
   /* =========================================================
+     WEBSITE SUBMISSION ID
+     ========================================================= */
+
+  var currentSubmissionId = '';
+
+  function generateWebsiteSubmissionId() {
+    if (
+      window.crypto &&
+      typeof window.crypto.randomUUID === 'function'
+    ) {
+      return 'web_' + window.crypto.randomUUID();
+    }
+
+    return (
+      'web_' +
+      Date.now().toString(36) +
+      '_' +
+      Math.random().toString(36).substring(2, 12)
+    );
+  }
+
+  /* =========================================================
      FORM FIELDS
      ========================================================= */
   var fullName = document.getElementById('fullName');
