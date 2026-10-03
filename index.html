@@ -354,7 +354,7 @@
         </div>
 
         <div class="form-row">
-          <label for="fullName">Name <span aria-hidden="true">*</span></label>
+          <label for="fullName">Full Name <span aria-hidden="true">*</span></label>
           <input type="text" id="fullName" name="fullName" required>
           <p class="field-error" id="fullNameError"></p>
         </div>
@@ -372,8 +372,9 @@
         </div>
 
         <div class="form-row">
-          <label for="companyOrg">Company / Organization</label>
-          <input type="text" id="companyOrg" name="companyOrg">
+          <label for="companyOrg">Company / Organization <span aria-hidden="true">*</span></label>
+          <input type="text" id="companyOrg" name="companyOrg" required>
+          <p class="field-error" id="companyOrgError"></p>
         </div>
 
         <div class="form-row">
@@ -407,20 +408,40 @@
         </div>
 
         <div class="form-row">
-          <label for="toolsUsed">Tools / Apps currently used</label>
-          <input type="text" id="toolsUsed" name="toolsUsed" placeholder="Google Sheets, Gmail, CRM, appointment system, Slack…">
+          <label for="toolsUsed">Tools / Apps currently used <span aria-hidden="true">*</span></label>
+          <input type="text" id="toolsUsed" name="toolsUsed" placeholder="Google Sheets, Gmail, CRM, appointment system, Slack…" required>
+          <p class="field-error" id="toolsUsedError"></p>
         </div>
 
         <div class="form-row">
-          <label for="manualProcess">What process is currently being done manually?</label>
-          <textarea id="manualProcess" name="manualProcess" rows="4"></textarea>
+          <label for="manualProcess">What process is currently being done manually? <span aria-hidden="true">*</span></label>
+          <textarea id="manualProcess" name="manualProcess" rows="4" required></textarea>
           <p class="field-help">Describe the current manual process you want to improve.</p>
+          <p class="field-error" id="manualProcessError"></p>
         </div>
 
         <div class="form-row">
-          <label for="automationGoal">What would you like to automate or improve?</label>
-          <textarea id="automationGoal" name="automationGoal" rows="4"></textarea>
+          <label for="automationGoal">What would you like to automate or improve? <span aria-hidden="true">*</span></label>
+          <textarea id="automationGoal" name="automationGoal" rows="4" required></textarea>
           <p class="field-help">Tell me what outcome you would like the automation to achieve.</p>
+          <p class="field-error" id="automationGoalError"></p>
+        </div>
+
+        <div class="form-row">
+          <label for="leadSource">How did you hear about LydAutomation? <span aria-hidden="true">*</span></label>
+          <select id="leadSource" name="leadSource" required>
+            <option value="">Select an option</option>
+            <option value="LinkedIn">LinkedIn</option>
+            <option value="Instagram">Instagram</option>
+            <option value="Facebook">Facebook</option>
+            <option value="TikTok">TikTok</option>
+            <option value="X">X</option>
+            <option value="Google Search">Google Search</option>
+            <option value="Referral">Referral</option>
+            <option value="Website">Website</option>
+            <option value="Other">Other</option>
+          </select>
+          <p class="field-error" id="leadSourceError"></p>
         </div>
 
         <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
