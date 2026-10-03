@@ -1771,18 +1771,28 @@ if (enquiryForm) {
       setFieldError('leadSource', 'leadSourceError', '');
     }
 
-    // Stop submission if validation failed
-    if (!isValid) {
-      formStatus.textContent =
-        'Please complete the required fields above.';
-      formStatus.style.background = '#FDEBEA';
-      formStatus.style.color = '#B3271E';
-      return;
-    }
+   // Stop submission if validation failed
+if (!isValid) {
+  formStatus.textContent =
+    'Please complete the required fields above.';
+  formStatus.style.background = '#FDEBEA';
+  formStatus.style.color = '#B3271E';
+  return;
+}
 
-    var submitButton = enquiryForm.querySelector(
-      'button[type="submit"]'
-    );
+/*
+  Create one unique submission ID for this enquiry.
+
+  If sending fails and the user retries, keep the same ID
+  so Workflow 1 can detect an accidental duplicate.
+*/
+if (!currentSubmissionId) {
+  currentSubmissionId = generateWebsiteSubmissionId();
+}
+
+var submitButton = enquiryForm.querySelector(
+  'button[type="submit"]'
+);
 
     if (submitButton) {
       submitButton.disabled = true;
