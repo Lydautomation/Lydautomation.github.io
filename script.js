@@ -1230,6 +1230,7 @@ if (phoneInput && window.intlTelInput) {
 
   phoneInput.removeAttribute('placeholder');
 
+  // Get the expected national-number length for the selected country.
   function getExpectedNationalLength() {
     if (!iti || !window.intlTelInputUtils) {
       return 0;
@@ -1248,19 +1249,24 @@ if (phoneInput && window.intlTelInput) {
         window.intlTelInputUtils.numberType.MOBILE
       );
 
+      if (!exampleNumber) {
+        return 0;
+      }
+
       var exampleDigits = exampleNumber.replace(/\D/g, '');
       var dialCodeDigits = String(countryData.dialCode).replace(/\D/g, '');
 
       if (exampleDigits.indexOf(dialCodeDigits) === 0) {
         return exampleDigits.length - dialCodeDigits.length;
       }
+
+      return exampleDigits.length;
     } catch (error) {
       return 0;
     }
-
-    return 0;
   }
 
+  // Move the progress line as the user enters the number.
   function updatePhoneProgress() {
     if (!phoneProgressBar) {
       return;
@@ -1286,18 +1292,13 @@ if (phoneInput && window.intlTelInput) {
   }
 
   function handlePhoneInput() {
-    // Keep the national-number area numeric.
+    // Allow digits only in the national-number part.
     var digitsOnly = phoneInput.value.replace(/\D/g, '');
 
-    /*
-      Nigeria:
-      Because +234 is already displayed separately,
-      remove the local leading 0 if the user enters it.
-      Example:
-      08190876543 -> 8190876543
-    */
     var selectedCountry = iti.getSelectedCountryData();
 
+    // Nigeria uses 0 locally, but +234 is already displayed separately.
+    // Example: 08190876543 becomes 8190876543.
     if (
       selectedCountry &&
       selectedCountry.iso2 === 'ng' &&
@@ -1306,12 +1307,20 @@ if (phoneInput && window.intlTelInput) {
       digitsOnly = digitsOnly.substring(1);
     }
 
+    // Limit input to the expected national length where available.
+    if (
+      expectedNationalLength &&
+      digitsOnly.length > expectedNationalLength
+    ) {
+      digitsOnly = digitsOnly.substring(0, expectedNationalLength);
+    }
+
     phoneInput.value = digitsOnly;
 
     /*
-      Do not allow additional digits once the phone library
-      identifies the current number as too long for the
-      selected country.
+      Extra safety:
+      If the phone library identifies the number as too long
+      for the selected country, restore the last accepted value.
     */
     if (
       window.intlTelInputUtils &&
@@ -1328,6 +1337,7 @@ if (phoneInput && window.intlTelInput) {
 
   phoneInput.addEventListener('input', handlePhoneInput);
 
+  // Recalculate everything whenever the user changes country.
   phoneInput.addEventListener('countrychange', function () {
     phoneInput.value = '';
     lastAcceptedPhoneValue = '';
@@ -1336,8 +1346,8 @@ if (phoneInput && window.intlTelInput) {
   });
 
   /*
-    Wait until the phone utility data has loaded before
-    calculating the selected country's expected length.
+    Wait for the phone utility data to load,
+    then calculate the expected length for the default country.
   */
   if (iti.promise && typeof iti.promise.then === 'function') {
     iti.promise.then(function () {
@@ -1348,11 +1358,17 @@ if (phoneInput && window.intlTelInput) {
 }
 
 function isPhoneValid() {
-  if (!phoneInput || !phoneInput.value.trim()) return false;
-  if (!iti) return false;
+  if (!phoneInput || !phoneInput.value.trim()) {
+    return false;
+  }
+
+  if (!iti) {
+    return false;
+  }
+
   return iti.isValidNumber();
 }
-
+   
   function setFieldError(fieldId, errorId, message) {
     var field = document.getElementById(fieldId);
     var errorEl = document.getElementById(errorId);
