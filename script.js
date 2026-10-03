@@ -1268,6 +1268,7 @@ if (enquiryForm) {
     var companyOrg = document.getElementById('companyOrg');
     var describesYou = document.getElementById('describesYou');
     var lookingFor = document.getElementById('lookingFor');
+    var budget = document.getElementById('budget');
     var toolsUsed = document.getElementById('toolsUsed');
     var manualProcess = document.getElementById('manualProcess');
     var automationGoal = document.getElementById('automationGoal');
@@ -1345,6 +1346,18 @@ if (enquiryForm) {
       isValid = false;
     } else {
       setFieldError('lookingFor', 'lookingForError', '');
+    }
+
+    // Budget
+    if (!budget.value.trim()) {
+      setFieldError(
+        'budget',
+        'budgetError',
+        'Please enter your budget.'
+      );
+      isValid = false;
+    } else {
+      setFieldError('budget', 'budgetError', '');
     }
 
     // Tools / Apps currently used
@@ -1428,6 +1441,7 @@ if (enquiryForm) {
         companyOrg: companyOrg.value.trim(),
         describesYou: describesYou.value,
         lookingFor: lookingFor.value,
+        budget: budget.value.trim(),
         toolsUsed: toolsUsed.value.trim(),
         manualProcess: manualProcess.value.trim(),
         automationGoal: automationGoal.value.trim(),
