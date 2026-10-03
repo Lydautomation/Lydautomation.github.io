@@ -1211,164 +1211,169 @@ var enquiryForm = document.getElementById('enquiryForm');
 if (enquiryForm) {
   var formStatus = document.getElementById('formStatus');
 
-  // International phone field
-var phoneInput = document.getElementById('phone');
-var phoneProgressBar = document.getElementById('phoneProgressBar');
-var iti = null;
+  /* =========================================================
+     INTERNATIONAL PHONE FIELD
+     ========================================================= */
+  var phoneInput = document.getElementById('phone');
+  var phoneProgressBar = document.getElementById('phoneProgressBar');
+  var iti = null;
 
-var lastAcceptedPhoneValue = '';
-var expectedNationalLength = 0;
+  var lastAcceptedPhoneValue = '';
+  var expectedNationalLength = 0;
 
-if (phoneInput && window.intlTelInput) {
-  iti = window.intlTelInput(phoneInput, {
-    initialCountry: 'ng',
-    preferredCountries: ['ng', 'gb', 'us', 'ca', 'gh'],
-    separateDialCode: true,
-    autoPlaceholder: 'off',
-    utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js'
-  });
+  if (phoneInput && window.intlTelInput) {
+    iti = window.intlTelInput(phoneInput, {
+      initialCountry: 'ng',
+      preferredCountries: ['ng', 'gb', 'us', 'ca', 'gh'],
+      separateDialCode: true,
+      autoPlaceholder: 'off',
+      utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js'
+    });
 
-  phoneInput.removeAttribute('placeholder');
+    phoneInput.removeAttribute('placeholder');
 
-  // Get the expected national-number length for the selected country.
-  function getExpectedNationalLength() {
-    if (!iti || !window.intlTelInputUtils) {
-      return 0;
-    }
-
-    var countryData = iti.getSelectedCountryData();
-
-    if (!countryData || !countryData.iso2 || !countryData.dialCode) {
-      return 0;
-    }
-
-    try {
-      var exampleNumber = window.intlTelInputUtils.getExampleNumber(
-        countryData.iso2,
-        false,
-        window.intlTelInputUtils.numberType.MOBILE
-      );
-
-      if (!exampleNumber) {
+    function getExpectedNationalLength() {
+      if (!iti || !window.intlTelInputUtils) {
         return 0;
       }
 
-      var exampleDigits = exampleNumber.replace(/\D/g, '');
-      var dialCodeDigits = String(countryData.dialCode).replace(/\D/g, '');
+      var countryData = iti.getSelectedCountryData();
 
-      if (exampleDigits.indexOf(dialCodeDigits) === 0) {
-        return exampleDigits.length - dialCodeDigits.length;
+      if (!countryData || !countryData.iso2 || !countryData.dialCode) {
+        return 0;
       }
 
-      return exampleDigits.length;
-    } catch (error) {
-      return 0;
-    }
-  }
+      try {
+        var exampleNumber = window.intlTelInputUtils.getExampleNumber(
+          countryData.iso2,
+          false,
+          window.intlTelInputUtils.numberType.MOBILE
+        );
 
-  // Move the progress line as the user enters the number.
-  function updatePhoneProgress() {
-    if (!phoneProgressBar) {
-      return;
-    }
+        if (!exampleNumber) {
+          return 0;
+        }
 
-    var digitsEntered = phoneInput.value.replace(/\D/g, '').length;
+        var exampleDigits = exampleNumber.replace(/\D/g, '');
+        var dialCodeDigits = String(countryData.dialCode).replace(/\D/g, '');
 
-    if (!expectedNationalLength) {
-      expectedNationalLength = getExpectedNationalLength();
-    }
+        if (exampleDigits.indexOf(dialCodeDigits) === 0) {
+          return exampleDigits.length - dialCodeDigits.length;
+        }
 
-    if (!expectedNationalLength) {
-      phoneProgressBar.style.width = '0%';
-      return;
-    }
-
-    var percentage = Math.min(
-      (digitsEntered / expectedNationalLength) * 100,
-      100
-    );
-
-    phoneProgressBar.style.width = percentage + '%';
-  }
-
-  function handlePhoneInput() {
-    // Allow digits only in the national-number part.
-    var digitsOnly = phoneInput.value.replace(/\D/g, '');
-
-    var selectedCountry = iti.getSelectedCountryData();
-
-    // Nigeria uses 0 locally, but +234 is already displayed separately.
-    // Example: 08190876543 becomes 8190876543.
-    if (
-      selectedCountry &&
-      selectedCountry.iso2 === 'ng' &&
-      digitsOnly.charAt(0) === '0'
-    ) {
-      digitsOnly = digitsOnly.substring(1);
+        return exampleDigits.length;
+      } catch (error) {
+        return 0;
+      }
     }
 
-    // Limit input to the expected national length where available.
-    if (
-      expectedNationalLength &&
-      digitsOnly.length > expectedNationalLength
-    ) {
-      digitsOnly = digitsOnly.substring(0, expectedNationalLength);
+    function updatePhoneProgress() {
+      if (!phoneProgressBar) {
+        return;
+      }
+
+      var digitsEntered = phoneInput.value.replace(/\D/g, '').length;
+
+      if (!expectedNationalLength) {
+        expectedNationalLength = getExpectedNationalLength();
+      }
+
+      if (!expectedNationalLength) {
+        phoneProgressBar.style.width = '0%';
+        return;
+      }
+
+      var percentage = Math.min(
+        (digitsEntered / expectedNationalLength) * 100,
+        100
+      );
+
+      phoneProgressBar.style.width = percentage + '%';
     }
 
-    phoneInput.value = digitsOnly;
+    function handlePhoneInput() {
+      var digitsOnly = phoneInput.value.replace(/\D/g, '');
 
-    /*
-      Extra safety:
-      If the phone library identifies the number as too long
-      for the selected country, restore the last accepted value.
-    */
-    if (
-      window.intlTelInputUtils &&
-      iti.getValidationError() ===
-        window.intlTelInputUtils.validationError.TOO_LONG
-    ) {
-      phoneInput.value = lastAcceptedPhoneValue;
-    } else {
-      lastAcceptedPhoneValue = phoneInput.value;
+      var selectedCountry = iti.getSelectedCountryData();
+
+      /*
+        Nigeria:
+        +234 is already shown separately,
+        so remove the local leading 0.
+        Example:
+        08190876543 -> 8190876543
+      */
+      if (
+        selectedCountry &&
+        selectedCountry.iso2 === 'ng' &&
+        digitsOnly.charAt(0) === '0'
+      ) {
+        digitsOnly = digitsOnly.substring(1);
+      }
+
+      /*
+        Stop the user from entering more digits than the
+        expected national mobile-number length.
+      */
+      if (
+        expectedNationalLength &&
+        digitsOnly.length > expectedNationalLength
+      ) {
+        digitsOnly = digitsOnly.substring(0, expectedNationalLength);
+      }
+
+      phoneInput.value = digitsOnly;
+
+      /*
+        Extra protection:
+        If the phone library identifies the number as too long,
+        restore the last accepted value.
+      */
+      if (
+        window.intlTelInputUtils &&
+        iti.getValidationError() ===
+          window.intlTelInputUtils.validationError.TOO_LONG
+      ) {
+        phoneInput.value = lastAcceptedPhoneValue;
+      } else {
+        lastAcceptedPhoneValue = phoneInput.value;
+      }
+
+      updatePhoneProgress();
     }
 
-    updatePhoneProgress();
-  }
+    phoneInput.addEventListener('input', handlePhoneInput);
 
-  phoneInput.addEventListener('input', handlePhoneInput);
-
-  // Recalculate everything whenever the user changes country.
-  phoneInput.addEventListener('countrychange', function () {
-    phoneInput.value = '';
-    lastAcceptedPhoneValue = '';
-    expectedNationalLength = getExpectedNationalLength();
-    updatePhoneProgress();
-  });
-
-  /*
-    Wait for the phone utility data to load,
-    then calculate the expected length for the default country.
-  */
-  if (iti.promise && typeof iti.promise.then === 'function') {
-    iti.promise.then(function () {
+    phoneInput.addEventListener('countrychange', function () {
+      phoneInput.value = '';
+      lastAcceptedPhoneValue = '';
       expectedNationalLength = getExpectedNationalLength();
       updatePhoneProgress();
     });
-  }
-}
 
-function isPhoneValid() {
-  if (!phoneInput || !phoneInput.value.trim()) {
-    return false;
-  }
-
-  if (!iti) {
-    return false;
+    if (iti.promise && typeof iti.promise.then === 'function') {
+      iti.promise.then(function () {
+        expectedNationalLength = getExpectedNationalLength();
+        updatePhoneProgress();
+      });
+    }
   }
 
-  return iti.isValidNumber();
-}
-   
+  function isPhoneValid() {
+    if (!phoneInput || !phoneInput.value.trim()) {
+      return false;
+    }
+
+    if (!iti) {
+      return false;
+    }
+
+    return iti.isValidNumber();
+  }
+
+  /* =========================================================
+     FORM HELPERS
+     ========================================================= */
   function setFieldError(fieldId, errorId, message) {
     var field = document.getElementById(fieldId);
     var errorEl = document.getElementById(errorId);
@@ -1387,10 +1392,13 @@ function isPhoneValid() {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   }
 
+  /* =========================================================
+     FORM SUBMISSION
+     ========================================================= */
   enquiryForm.addEventListener('submit', function (e) {
     e.preventDefault();
 
-    // Honeypot spam check — if filled, silently drop the submission.
+    // Honeypot spam check
     var honeypot = document.getElementById('website');
 
     if (honeypot && honeypot.value.trim() !== '') {
@@ -1399,17 +1407,17 @@ function isPhoneValid() {
     }
 
     // Form fields
-var fullName = document.getElementById('fullName');
-var email = document.getElementById('email');
-var companyOrg = document.getElementById('companyOrg');
-var describesYou = document.getElementById('describesYou');
-var lookingFor = document.getElementById('lookingFor');
-var budget = document.getElementById('budget');
-var currency = document.getElementById('currency');
-var toolsUsed = document.getElementById('toolsUsed');
-var manualProcess = document.getElementById('manualProcess');
-var automationGoal = document.getElementById('automationGoal');
-var leadSource = document.getElementById('leadSource');
+    var fullName = document.getElementById('fullName');
+    var email = document.getElementById('email');
+    var companyOrg = document.getElementById('companyOrg');
+    var describesYou = document.getElementById('describesYou');
+    var lookingFor = document.getElementById('lookingFor');
+    var budget = document.getElementById('budget');
+    var currency = document.getElementById('currency');
+    var toolsUsed = document.getElementById('toolsUsed');
+    var manualProcess = document.getElementById('manualProcess');
+    var automationGoal = document.getElementById('automationGoal');
+    var leadSource = document.getElementById('leadSource');
 
     var isValid = true;
 
@@ -1485,7 +1493,12 @@ var leadSource = document.getElementById('leadSource');
       setFieldError('lookingFor', 'lookingForError', '');
     }
 
-    // Budget
+    /*
+      Budget:
+      Must contain digits only.
+      Accepted: 500000
+      Rejected: ₦500000, $500000, 500,000, 500k
+    */
     if (!budget.value.trim()) {
       setFieldError(
         'budget',
@@ -1493,8 +1506,27 @@ var leadSource = document.getElementById('leadSource');
         'Please enter your budget.'
       );
       isValid = false;
+    } else if (!/^\d+$/.test(budget.value.trim())) {
+      setFieldError(
+        'budget',
+        'budgetError',
+        'Please enter numbers only, without currency signs or commas.'
+      );
+      isValid = false;
     } else {
       setFieldError('budget', 'budgetError', '');
+    }
+
+    // Currency
+    if (!currency.value) {
+      setFieldError(
+        'currency',
+        'currencyError',
+        'Please select a currency.'
+      );
+      isValid = false;
+    } else {
+      setFieldError('currency', 'currencyError', '');
     }
 
     // Tools / Apps currently used
@@ -1572,17 +1604,24 @@ var leadSource = document.getElementById('leadSource');
       body: JSON.stringify({
         fullName: fullName.value.trim(),
         email: email.value.trim(),
-        phone: (iti && phoneInput && phoneInput.value.trim())
-          ? iti.getNumber()
-          : '',
+
+        phone:
+          iti && phoneInput && phoneInput.value.trim()
+            ? iti.getNumber()
+            : '',
+
         companyOrg: companyOrg.value.trim(),
         describesYou: describesYou.value,
         lookingFor: lookingFor.value,
+
         budget: budget.value.trim(),
+        currency: currency.value,
+
         toolsUsed: toolsUsed.value.trim(),
         manualProcess: manualProcess.value.trim(),
         automationGoal: automationGoal.value.trim(),
         leadSource: leadSource.value,
+
         workloadEstimate: window.__workloadEstimate || null
       })
     })
@@ -1598,6 +1637,13 @@ var leadSource = document.getElementById('leadSource');
 
         enquiryForm.reset();
 
+        // Reset phone progress after successful submission
+        lastAcceptedPhoneValue = '';
+
+        if (phoneProgressBar) {
+          phoneProgressBar.style.width = '0%';
+        }
+
         if (window.__workloadEstimate) {
           window.__workloadEstimate = null;
         }
@@ -1608,12 +1654,12 @@ var leadSource = document.getElementById('leadSource');
         formStatus.textContent =
           'Something went wrong sending your enquiry. Please try again, or email Lydiaogbeneodey@gmail.com directly.';
       })
-      .finally(function () {
-        if (submitButton) {
-          submitButton.disabled = false;
-        }
-      });
+  .finally(function () {
+    if (submitButton) {
+      submitButton.disabled = false;
+    }
   });
+});
 }
 
 });
