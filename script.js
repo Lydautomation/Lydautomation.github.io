@@ -1263,16 +1263,17 @@ if (enquiryForm) {
     }
 
     // Form fields
-    var fullName = document.getElementById('fullName');
-    var email = document.getElementById('email');
-    var companyOrg = document.getElementById('companyOrg');
-    var describesYou = document.getElementById('describesYou');
-    var lookingFor = document.getElementById('lookingFor');
-    var budget = document.getElementById('budget');
-    var toolsUsed = document.getElementById('toolsUsed');
-    var manualProcess = document.getElementById('manualProcess');
-    var automationGoal = document.getElementById('automationGoal');
-    var leadSource = document.getElementById('leadSource');
+var fullName = document.getElementById('fullName');
+var email = document.getElementById('email');
+var companyOrg = document.getElementById('companyOrg');
+var describesYou = document.getElementById('describesYou');
+var lookingFor = document.getElementById('lookingFor');
+var budget = document.getElementById('budget');
+var currency = document.getElementById('currency');
+var toolsUsed = document.getElementById('toolsUsed');
+var manualProcess = document.getElementById('manualProcess');
+var automationGoal = document.getElementById('automationGoal');
+var leadSource = document.getElementById('leadSource');
 
     var isValid = true;
 
