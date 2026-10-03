@@ -1204,9 +1204,10 @@ phoneNumber.value = '0800 000 0000';
    WORK WITH ME — ENQUIRY FORM
    Connected to the LydAutomation n8n enquiry workflow.
    ========================================================= */
-  var WEBHOOK_URL = 'https://lydautomation-n8n.duckdns.org/webhook/website-enquiry';
+var WEBHOOK_URL = 'https://lydautomation-n8n.duckdns.org/webhook/website-enquiry';
 
-  var enquiryForm = document.getElementById('enquiryForm');
+var enquiryForm = document.getElementById('enquiryForm');
+
 if (enquiryForm) {
   var formStatus = document.getElementById('formStatus');
 
@@ -1215,16 +1216,16 @@ if (enquiryForm) {
   var iti = null;
 
   if (phoneInput && window.intlTelInput) {
-  iti = window.intlTelInput(phoneInput, {
-    initialCountry: 'ng',
-    preferredCountries: ['ng', 'gb', 'us', 'ca', 'gh'],
-    separateDialCode: true,
-    autoPlaceholder: 'off',
-    utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js'
-  });
+    iti = window.intlTelInput(phoneInput, {
+      initialCountry: 'ng',
+      preferredCountries: ['ng', 'gb', 'us', 'ca', 'gh'],
+      separateDialCode: true,
+      autoPlaceholder: 'off',
+      utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js'
+    });
 
-  phoneInput.removeAttribute('placeholder');
-}
+    phoneInput.removeAttribute('placeholder');
+  }
 
   function isPhoneValid() {
     if (!phoneInput || !phoneInput.value.trim()) return false;
@@ -1232,136 +1233,236 @@ if (enquiryForm) {
     return iti.isValidNumber();
   }
 
-    function setFieldError(fieldId, errorId, message) {
-      var field = document.getElementById(fieldId);
-      var errorEl = document.getElementById(errorId);
-      var row = field.closest('.form-row');
-      if (message) {
-        row.classList.add('has-error');
-        errorEl.textContent = message;
-      } else {
-        row.classList.remove('has-error');
-        errorEl.textContent = '';
-      }
+  function setFieldError(fieldId, errorId, message) {
+    var field = document.getElementById(fieldId);
+    var errorEl = document.getElementById(errorId);
+    var row = field.closest('.form-row');
+
+    if (message) {
+      row.classList.add('has-error');
+      errorEl.textContent = message;
+    } else {
+      row.classList.remove('has-error');
+      errorEl.textContent = '';
+    }
+  }
+
+  function isValidEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  }
+
+  enquiryForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    // Honeypot spam check — if filled, silently drop the submission.
+    var honeypot = document.getElementById('website');
+
+    if (honeypot && honeypot.value.trim() !== '') {
+      formStatus.textContent = '';
+      return;
     }
 
-    function isValidEmail(value) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    // Form fields
+    var fullName = document.getElementById('fullName');
+    var email = document.getElementById('email');
+    var companyOrg = document.getElementById('companyOrg');
+    var describesYou = document.getElementById('describesYou');
+    var lookingFor = document.getElementById('lookingFor');
+    var toolsUsed = document.getElementById('toolsUsed');
+    var manualProcess = document.getElementById('manualProcess');
+    var automationGoal = document.getElementById('automationGoal');
+    var leadSource = document.getElementById('leadSource');
+
+    var isValid = true;
+
+    // Full Name
+    if (!fullName.value.trim()) {
+      setFieldError(
+        'fullName',
+        'fullNameError',
+        'Please enter your full name.'
+      );
+      isValid = false;
+    } else {
+      setFieldError('fullName', 'fullNameError', '');
     }
 
-    enquiryForm.addEventListener('submit', function (e) {
-      e.preventDefault();
+    // Email
+    if (!email.value.trim() || !isValidEmail(email.value.trim())) {
+      setFieldError(
+        'email',
+        'emailError',
+        'Please enter a valid email address.'
+      );
+      isValid = false;
+    } else {
+      setFieldError('email', 'emailError', '');
+    }
 
-      // Honeypot spam check — if filled, silently drop the submission.
-      var honeypot = document.getElementById('website');
-      if (honeypot && honeypot.value.trim() !== '') {
-        formStatus.textContent = '';
-        return;
-      }
+    // Phone Number
+    if (!isPhoneValid()) {
+      setFieldError(
+        'phone',
+        'phoneError',
+        'Please enter a valid phone number.'
+      );
+      isValid = false;
+    } else {
+      setFieldError('phone', 'phoneError', '');
+    }
 
-      var fullName = document.getElementById('fullName');
-      var email = document.getElementById('email');
-      var describesYou = document.getElementById('describesYou');
-      var lookingFor = document.getElementById('lookingFor');
+    // Company / Organization
+    if (!companyOrg.value.trim()) {
+      setFieldError(
+        'companyOrg',
+        'companyOrgError',
+        'Please enter your company or organization.'
+      );
+      isValid = false;
+    } else {
+      setFieldError('companyOrg', 'companyOrgError', '');
+    }
 
-      var isValid = true;
+    // What best describes you?
+    if (!describesYou.value) {
+      setFieldError(
+        'describesYou',
+        'describesYouError',
+        'Please select an option.'
+      );
+      isValid = false;
+    } else {
+      setFieldError('describesYou', 'describesYouError', '');
+    }
 
-      if (!fullName.value.trim()) {
-        setFieldError('fullName', 'fullNameError', 'Please enter your name.');
-        isValid = false;
-      } else {
-        setFieldError('fullName', 'fullNameError', '');
-      }
+    // What are you looking for?
+    if (!lookingFor.value) {
+      setFieldError(
+        'lookingFor',
+        'lookingForError',
+        'Please select an option.'
+      );
+      isValid = false;
+    } else {
+      setFieldError('lookingFor', 'lookingForError', '');
+    }
 
-      if (!email.value.trim() || !isValidEmail(email.value.trim())) {
-        setFieldError('email', 'emailError', 'Please enter a valid email address.');
-        isValid = false;
-      } else {
-        setFieldError('email', 'emailError', '');
-      }
+    // Tools / Apps currently used
+    if (!toolsUsed.value.trim()) {
+      setFieldError(
+        'toolsUsed',
+        'toolsUsedError',
+        'Please enter the tools or apps currently used.'
+      );
+      isValid = false;
+    } else {
+      setFieldError('toolsUsed', 'toolsUsedError', '');
+    }
 
-      if (!isPhoneValid()) {
-  setFieldError('phone', 'phoneError', 'Please enter a valid phone number.');
-  isValid = false;
-} else {
-  setFieldError('phone', 'phoneError', '');
-}
+    // Manual process
+    if (!manualProcess.value.trim()) {
+      setFieldError(
+        'manualProcess',
+        'manualProcessError',
+        'Please describe the current manual process.'
+      );
+      isValid = false;
+    } else {
+      setFieldError('manualProcess', 'manualProcessError', '');
+    }
 
-if (!describesYou.value) {
-  setFieldError('describesYou', 'describesYouError', 'Please select an option.');
-  isValid = false;
-} else {
-  setFieldError('describesYou', 'describesYouError', '');
-}
+    // Automation goal
+    if (!automationGoal.value.trim()) {
+      setFieldError(
+        'automationGoal',
+        'automationGoalError',
+        'Please describe what you would like to automate or improve.'
+      );
+      isValid = false;
+    } else {
+      setFieldError('automationGoal', 'automationGoalError', '');
+    }
 
-      if (!lookingFor.value) {
-        setFieldError('lookingFor', 'lookingForError', 'Please select an option.');
-        isValid = false;
-      } else {
-        setFieldError('lookingFor', 'lookingForError', '');
-      }
+    // Lead Source
+    if (!leadSource.value) {
+      setFieldError(
+        'leadSource',
+        'leadSourceError',
+        'Please select how you heard about LydAutomation.'
+      );
+      isValid = false;
+    } else {
+      setFieldError('leadSource', 'leadSourceError', '');
+    }
 
-      if (!isValid) {
-        formStatus.textContent = 'Please complete the required fields above.';
+    // Stop submission if validation failed
+    if (!isValid) {
+      formStatus.textContent = 'Please complete the required fields above.';
+      formStatus.style.background = '#FDEBEA';
+      formStatus.style.color = '#B3271E';
+      return;
+    }
+
+    var submitButton = enquiryForm.querySelector('button[type="submit"]');
+
+    if (submitButton) {
+      submitButton.disabled = true;
+    }
+
+    formStatus.style.background = '';
+    formStatus.style.color = '';
+    formStatus.textContent = 'Sending your enquiry…';
+
+    fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+
+      body: JSON.stringify({
+        fullName: fullName.value.trim(),
+        email: email.value.trim(),
+        phone: (iti && phoneInput && phoneInput.value.trim())
+          ? iti.getNumber()
+          : '',
+        companyOrg: companyOrg.value.trim(),
+        describesYou: describesYou.value,
+        lookingFor: lookingFor.value,
+        toolsUsed: toolsUsed.value.trim(),
+        manualProcess: manualProcess.value.trim(),
+        automationGoal: automationGoal.value.trim(),
+        leadSource: leadSource.value,
+        workloadEstimate: window.__workloadEstimate || null
+      })
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error('Request failed');
+        }
+
+        formStatus.style.background = '#E9F8FA';
+        formStatus.style.color = '#000052';
+        formStatus.textContent =
+          'Thank you — your enquiry has been received. I’ll be in touch soon.';
+
+        enquiryForm.reset();
+
+        if (window.__workloadEstimate) {
+          window.__workloadEstimate = null;
+        }
+      })
+      .catch(function () {
         formStatus.style.background = '#FDEBEA';
         formStatus.style.color = '#B3271E';
-        return;
-      }
-
-            var submitButton = enquiryForm.querySelector('button[type="submit"]');
-
-      if (submitButton) {
-        submitButton.disabled = true;
-      }
-
-      formStatus.style.background = '';
-      formStatus.style.color = '';
-      formStatus.textContent = 'Sending your enquiry…';
-
-      fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-  fullName: fullName.value.trim(),
-  email: email.value.trim(),
-  phone: (iti && phoneInput && phoneInput.value.trim()) ? iti.getNumber() : '',
-  companyOrg: document.getElementById('companyOrg').value.trim(),
-  describesYou: describesYou.value,
-  lookingFor: lookingFor.value,
-  toolsUsed: document.getElementById('toolsUsed').value.trim(),
-  manualProcess: document.getElementById('manualProcess').value.trim(),
-  automationGoal: document.getElementById('automationGoal').value.trim(),
-  workloadEstimate: window.__workloadEstimate || null
-})
-})
- .then(function (response) {
-  if (!response.ok) {
-    throw new Error('Request failed');
-  }
-
-          formStatus.style.background = '#E9F8FA';
-          formStatus.style.color = '#000052';
-          formStatus.textContent = 'Thank you — your enquiry has been received. I’ll be in touch soon.';
-
-          enquiryForm.reset();
-
-          if (window.__workloadEstimate) {
-            window.__workloadEstimate = null;
-          }
-        })
-        .catch(function () {
-          formStatus.style.background = '#FDEBEA';
-          formStatus.style.color = '#B3271E';
-          formStatus.textContent = 'Something went wrong sending your enquiry. Please try again, or email Lydiaogbeneodey@gmail.com directly.';
-        })
-        .finally(function () {
-          if (submitButton) {
-            submitButton.disabled = false;
-          }
-        });
-           });
-  }
+        formStatus.textContent =
+          'Something went wrong sending your enquiry. Please try again, or email Lydiaogbeneodey@gmail.com directly.';
+      })
+      .finally(function () {
+        if (submitButton) {
+          submitButton.disabled = false;
+        }
+      });
+  });
+}
 
 });
