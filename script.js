@@ -1219,12 +1219,19 @@ if (enquiryForm) {
   var companyOrg = document.getElementById('companyOrg');
   var describesYou = document.getElementById('describesYou');
   var lookingFor = document.getElementById('lookingFor');
+
   var budget = document.getElementById('budget');
   var currency = document.getElementById('currency');
   var budgetCurrencyFields = document.getElementById('budgetCurrencyFields');
+
+  var serviceSpecificFields = document.getElementById('serviceSpecificFields');
   var toolsUsed = document.getElementById('toolsUsed');
   var manualProcess = document.getElementById('manualProcess');
   var automationGoal = document.getElementById('automationGoal');
+
+  var generalEnquiryFields = document.getElementById('generalEnquiryFields');
+  var generalMessage = document.getElementById('generalMessage');
+
   var leadSource = document.getElementById('leadSource');
 
   /* =========================================================
@@ -1398,7 +1405,7 @@ if (enquiryForm) {
   }
 
   /* =========================================================
-     CONDITIONAL BUDGET + CURRENCY
+     ENQUIRY TYPE LOGIC
      ========================================================= */
 
   var paidServiceOptions = [
@@ -1409,36 +1416,131 @@ if (enquiryForm) {
     'System Integration'
   ];
 
-  function requiresBudget(value) {
+  var nonServiceOptions = [
+    'Job Opportunity',
+    'Collaboration / Partnership',
+    'Other'
+  ];
+
+  function isPaidService(value) {
     return paidServiceOptions.indexOf(value) !== -1;
   }
 
-  function updateBudgetCurrencyFields() {
-    var shouldShowBudget = requiresBudget(lookingFor.value);
+  function isNonServiceEnquiry(value) {
+    return nonServiceOptions.indexOf(value) !== -1;
+  }
 
-    if (shouldShowBudget) {
+  function updateEnquiryFields() {
+    var selectedValue = lookingFor.value;
+    var serviceSelected = isPaidService(selectedValue);
+    var nonServiceSelected = isNonServiceEnquiry(selectedValue);
+
+    /*
+      PAID SERVICE ENQUIRY
+      Show:
+      - Budget
+      - Currency
+      - Tools / Apps
+      - Manual Process
+      - Automation Goal
+
+      Hide:
+      - General Message
+    */
+    if (serviceSelected) {
       budgetCurrencyFields.hidden = false;
+      serviceSpecificFields.hidden = false;
+      generalEnquiryFields.hidden = true;
 
       budget.required = true;
       currency.required = true;
-    } else {
+      toolsUsed.required = true;
+      manualProcess.required = true;
+      automationGoal.required = true;
+
+      generalMessage.required = false;
+      generalMessage.value = '';
+
+      setFieldError('generalMessage', 'generalMessageError', '');
+      return;
+    }
+
+    /*
+      NON-SERVICE ENQUIRY
+      Job Opportunity
+      Collaboration / Partnership
+      Other
+
+      Show:
+      - General Message
+
+      Hide:
+      - Budget
+      - Currency
+      - Service-specific questions
+    */
+    if (nonServiceSelected) {
       budgetCurrencyFields.hidden = true;
+      serviceSpecificFields.hidden = true;
+      generalEnquiryFields.hidden = false;
 
       budget.required = false;
       currency.required = false;
+      toolsUsed.required = false;
+      manualProcess.required = false;
+      automationGoal.required = false;
+
+      generalMessage.required = true;
 
       budget.value = '';
       currency.value = '';
+      toolsUsed.value = '';
+      manualProcess.value = '';
+      automationGoal.value = '';
 
       setFieldError('budget', 'budgetError', '');
       setFieldError('currency', 'currencyError', '');
+      setFieldError('toolsUsed', 'toolsUsedError', '');
+      setFieldError('manualProcess', 'manualProcessError', '');
+      setFieldError('automationGoal', 'automationGoalError', '');
+
+      return;
     }
+
+    /*
+      NO OPTION SELECTED YET
+      Hide all conditional sections.
+    */
+    budgetCurrencyFields.hidden = true;
+    serviceSpecificFields.hidden = true;
+    generalEnquiryFields.hidden = true;
+
+    budget.required = false;
+    currency.required = false;
+    toolsUsed.required = false;
+    manualProcess.required = false;
+    automationGoal.required = false;
+    generalMessage.required = false;
+
+    budget.value = '';
+    currency.value = '';
+    toolsUsed.value = '';
+    manualProcess.value = '';
+    automationGoal.value = '';
+    generalMessage.value = '';
+
+    setFieldError('budget', 'budgetError', '');
+    setFieldError('currency', 'currencyError', '');
+    setFieldError('toolsUsed', 'toolsUsedError', '');
+    setFieldError('manualProcess', 'manualProcessError', '');
+    setFieldError('automationGoal', 'automationGoalError', '');
+    setFieldError('generalMessage', 'generalMessageError', '');
   }
 
-  lookingFor.addEventListener('change', updateBudgetCurrencyFields);
+  lookingFor.addEventListener('change', updateEnquiryFields);
 
-  // Make sure the correct state is applied when the page loads.
-  updateBudgetCurrencyFields();
+  // Apply the correct state when the page first loads.
+  updateEnquiryFields();
 
   /* =========================================================
      BUDGET — DIGITS ONLY
@@ -1462,7 +1564,9 @@ if (enquiryForm) {
     }
 
     var isValid = true;
-    var budgetIsRequired = requiresBudget(lookingFor.value);
+
+    var serviceSelected = isPaidService(lookingFor.value);
+    var nonServiceSelected = isNonServiceEnquiry(lookingFor.value);
 
     // Full Name
     if (!fullName.value.trim()) {
@@ -1536,11 +1640,12 @@ if (enquiryForm) {
       setFieldError('lookingFor', 'lookingForError', '');
     }
 
-    /*
-      Budget and Currency are required ONLY
-      for paid service enquiries.
-    */
-    if (budgetIsRequired) {
+    /* =========================================================
+       PAID SERVICE VALIDATION
+       ========================================================= */
+    if (serviceSelected) {
+
+      // Budget
       if (!budget.value.trim()) {
         setFieldError(
           'budget',
@@ -1559,6 +1664,7 @@ if (enquiryForm) {
         setFieldError('budget', 'budgetError', '');
       }
 
+      // Currency
       if (!currency.value) {
         setFieldError(
           'currency',
@@ -1569,44 +1675,65 @@ if (enquiryForm) {
       } else {
         setFieldError('currency', 'currencyError', '');
       }
-    } else {
+
+      // Tools / Apps currently used
+      if (!toolsUsed.value.trim()) {
+        setFieldError(
+          'toolsUsed',
+          'toolsUsedError',
+          'Please enter the tools or apps currently used.'
+        );
+        isValid = false;
+      } else {
+        setFieldError('toolsUsed', 'toolsUsedError', '');
+      }
+
+      // Manual process
+      if (!manualProcess.value.trim()) {
+        setFieldError(
+          'manualProcess',
+          'manualProcessError',
+          'Please describe the current manual process.'
+        );
+        isValid = false;
+      } else {
+        setFieldError('manualProcess', 'manualProcessError', '');
+      }
+
+      // Automation goal
+      if (!automationGoal.value.trim()) {
+        setFieldError(
+          'automationGoal',
+          'automationGoalError',
+          'Please describe what you would like to automate or improve.'
+        );
+        isValid = false;
+      } else {
+        setFieldError('automationGoal', 'automationGoalError', '');
+      }
+
+      setFieldError('generalMessage', 'generalMessageError', '');
+    }
+
+    /* =========================================================
+       NON-SERVICE VALIDATION
+       ========================================================= */
+    if (nonServiceSelected) {
+      if (!generalMessage.value.trim()) {
+        setFieldError(
+          'generalMessage',
+          'generalMessageError',
+          'Please tell me a little about your enquiry.'
+        );
+        isValid = false;
+      } else {
+        setFieldError('generalMessage', 'generalMessageError', '');
+      }
+
       setFieldError('budget', 'budgetError', '');
       setFieldError('currency', 'currencyError', '');
-    }
-
-    // Tools / Apps currently used
-    if (!toolsUsed.value.trim()) {
-      setFieldError(
-        'toolsUsed',
-        'toolsUsedError',
-        'Please enter the tools or apps currently used.'
-      );
-      isValid = false;
-    } else {
       setFieldError('toolsUsed', 'toolsUsedError', '');
-    }
-
-    // Manual process
-    if (!manualProcess.value.trim()) {
-      setFieldError(
-        'manualProcess',
-        'manualProcessError',
-        'Please describe the current manual process.'
-      );
-      isValid = false;
-    } else {
       setFieldError('manualProcess', 'manualProcessError', '');
-    }
-
-    // Automation goal
-    if (!automationGoal.value.trim()) {
-      setFieldError(
-        'automationGoal',
-        'automationGoalError',
-        'Please describe what you would like to automate or improve.'
-      );
-      isValid = false;
-    } else {
       setFieldError('automationGoal', 'automationGoalError', '');
     }
 
@@ -1624,13 +1751,16 @@ if (enquiryForm) {
 
     // Stop submission if validation failed
     if (!isValid) {
-      formStatus.textContent = 'Please complete the required fields above.';
+      formStatus.textContent =
+        'Please complete the required fields above.';
       formStatus.style.background = '#FDEBEA';
       formStatus.style.color = '#B3271E';
       return;
     }
 
-    var submitButton = enquiryForm.querySelector('button[type="submit"]');
+    var submitButton = enquiryForm.querySelector(
+      'button[type="submit"]'
+    );
 
     if (submitButton) {
       submitButton.disabled = true;
@@ -1664,27 +1794,49 @@ if (enquiryForm) {
         lookingFor: lookingFor.value,
 
         /*
-          Paid service:
-          budget = "500000"
-          currency = "NGN"
+          SERVICE ENQUIRY:
+          Sends Budget + Currency.
 
-          Collaboration / Job / Other:
-          budget = ""
-          currency = ""
+          NON-SERVICE ENQUIRY:
+          Sends blank Budget + Currency.
         */
-        budget: budgetIsRequired
+        budget: serviceSelected
           ? budget.value.trim()
           : '',
 
-        currency: budgetIsRequired
+        currency: serviceSelected
           ? currency.value
           : '',
 
-        toolsUsed: toolsUsed.value.trim(),
+        /*
+          SERVICE ENQUIRY:
+          Sends automation discovery information.
 
-        manualProcess: manualProcess.value.trim(),
+          NON-SERVICE ENQUIRY:
+          Sends blank values.
+        */
+        toolsUsed: serviceSelected
+          ? toolsUsed.value.trim()
+          : '',
 
-        automationGoal: automationGoal.value.trim(),
+        manualProcess: serviceSelected
+          ? manualProcess.value.trim()
+          : '',
+
+        automationGoal: serviceSelected
+          ? automationGoal.value.trim()
+          : '',
+
+        /*
+          NON-SERVICE ENQUIRY:
+          Sends the person's general message.
+
+          SERVICE ENQUIRY:
+          Sends blank generalMessage.
+        */
+        generalMessage: nonServiceSelected
+          ? generalMessage.value.trim()
+          : '',
 
         leadSource: leadSource.value,
 
@@ -1704,10 +1856,9 @@ if (enquiryForm) {
         enquiryForm.reset();
 
         /*
-          After resetting the form:
-          hide Budget + Currency again.
+          Reset all conditional sections after successful submission.
         */
-        updateBudgetCurrencyFields();
+        updateEnquiryFields();
 
         // Reset phone progress
         lastAcceptedPhoneValue = '';
@@ -1726,10 +1877,10 @@ if (enquiryForm) {
         formStatus.textContent =
           'Something went wrong sending your enquiry. Please try again, or email Lydiaogbeneodey@gmail.com directly.';
       })
-      .finally(function () {
+            .finally(function () {
         if (submitButton) {
           submitButton.disabled = false;
-       }
+        }
       });
   });
 }
