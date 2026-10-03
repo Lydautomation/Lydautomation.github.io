@@ -397,45 +397,66 @@
           <p class="field-error" id="describesYouError"></p>
         </div>
 
-        <div class="form-row">
-          <label for="lookingFor">What are you looking for? <span aria-hidden="true">*</span></label>
-          <select id="lookingFor" name="lookingFor" required>
-            <option value="">Select an option</option>
-            <option>Health Tech Automation</option>
-            <option>Sales &amp; CRM Automation</option>
-            <option>AI Agent</option>
-            <option>Workflow Automation</option>
-            <option>System Integration</option>
-            <option>Job Opportunity</option>
-            <option>Collaboration</option>
-            <option>Other</option>
-          </select>
-          <p class="field-error" id="lookingForError"></p>
-        </div>
+       <div class="form-row">
+  <label for="lookingFor">
+    What are you looking for? <span aria-hidden="true">*</span>
+  </label>
 
-        <div class="form-row">
-  <label for="budget">Budget <span aria-hidden="true">*</span></label>
-  <input
-    type="text"
-    id="budget"
-    name="budget"
-    inputmode="numeric"
-    pattern="[0-9]+"
-    required
-  >
-  <p class="field-error" id="budgetError"></p>
+  <select id="lookingFor" name="lookingFor" required>
+    <option value="">Select an option</option>
+
+    <option value="Health Tech Automation">Health Tech Automation</option>
+    <option value="Sales & CRM Automation">Sales &amp; CRM Automation</option>
+    <option value="AI Agent">AI Agent</option>
+    <option value="Workflow Automation">Workflow Automation</option>
+    <option value="System Integration">System Integration</option>
+
+    <option value="Job Opportunity">Job Opportunity</option>
+    <option value="Collaboration / Partnership">Collaboration / Partnership</option>
+    <option value="Other">Other</option>
+  </select>
+
+  <p class="field-error" id="lookingForError"></p>
 </div>
 
-<div class="form-row">
-  <label for="currency">Currency <span aria-hidden="true">*</span></label>
-  <select id="currency" name="currency" required>
-    <option value="">Select currency</option>
-    <option value="NGN">NGN</option>
-    <option value="USD">USD</option>
-    <option value="GBP">GBP</option>
-    <option value="EUR">EUR</option>
-  </select>
-  <p class="field-error" id="currencyError"></p>
+<div id="budgetCurrencyFields" hidden>
+
+  <div class="form-row">
+    <label for="budget">
+      Budget <span aria-hidden="true">*</span>
+    </label>
+
+    <input
+      type="text"
+      id="budget"
+      name="budget"
+      inputmode="numeric"
+      pattern="[0-9]+"
+    >
+
+    <p class="field-help">
+      Enter numbers only. Select the currency below.
+    </p>
+
+    <p class="field-error" id="budgetError"></p>
+  </div>
+
+  <div class="form-row">
+    <label for="currency">
+      Currency <span aria-hidden="true">*</span>
+    </label>
+
+    <select id="currency" name="currency">
+      <option value="">Select currency</option>
+      <option value="NGN">NGN</option>
+      <option value="USD">USD</option>
+      <option value="GBP">GBP</option>
+      <option value="EUR">EUR</option>
+    </select>
+
+    <p class="field-error" id="currencyError"></p>
+  </div>
+
 </div>
 
         <div class="form-row">
