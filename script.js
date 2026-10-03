@@ -1212,26 +1212,146 @@ if (enquiryForm) {
   var formStatus = document.getElementById('formStatus');
 
   // International phone field
-  var phoneInput = document.getElementById('phone');
-  var iti = null;
+var phoneInput = document.getElementById('phone');
+var phoneProgressBar = document.getElementById('phoneProgressBar');
+var iti = null;
 
-  if (phoneInput && window.intlTelInput) {
-    iti = window.intlTelInput(phoneInput, {
-      initialCountry: 'ng',
-      preferredCountries: ['ng', 'gb', 'us', 'ca', 'gh'],
-      separateDialCode: true,
-      autoPlaceholder: 'off',
-      utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js'
+var lastAcceptedPhoneValue = '';
+var expectedNationalLength = 0;
+
+if (phoneInput && window.intlTelInput) {
+  iti = window.intlTelInput(phoneInput, {
+    initialCountry: 'ng',
+    preferredCountries: ['ng', 'gb', 'us', 'ca', 'gh'],
+    separateDialCode: true,
+    autoPlaceholder: 'off',
+    utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js'
+  });
+
+  phoneInput.removeAttribute('placeholder');
+
+  function getExpectedNationalLength() {
+    if (!iti || !window.intlTelInputUtils) {
+      return 0;
+    }
+
+    var countryData = iti.getSelectedCountryData();
+
+    if (!countryData || !countryData.iso2 || !countryData.dialCode) {
+      return 0;
+    }
+
+    try {
+      var exampleNumber = window.intlTelInputUtils.getExampleNumber(
+        countryData.iso2,
+        false,
+        window.intlTelInputUtils.numberType.MOBILE
+      );
+
+      var exampleDigits = exampleNumber.replace(/\D/g, '');
+      var dialCodeDigits = String(countryData.dialCode).replace(/\D/g, '');
+
+      if (exampleDigits.indexOf(dialCodeDigits) === 0) {
+        return exampleDigits.length - dialCodeDigits.length;
+      }
+    } catch (error) {
+      return 0;
+    }
+
+    return 0;
+  }
+
+  function updatePhoneProgress() {
+    if (!phoneProgressBar) {
+      return;
+    }
+
+    var digitsEntered = phoneInput.value.replace(/\D/g, '').length;
+
+    if (!expectedNationalLength) {
+      expectedNationalLength = getExpectedNationalLength();
+    }
+
+    if (!expectedNationalLength) {
+      phoneProgressBar.style.width = '0%';
+      return;
+    }
+
+    var percentage = Math.min(
+      (digitsEntered / expectedNationalLength) * 100,
+      100
+    );
+
+    phoneProgressBar.style.width = percentage + '%';
+  }
+
+  function handlePhoneInput() {
+    // Keep the national-number area numeric.
+    var digitsOnly = phoneInput.value.replace(/\D/g, '');
+
+    /*
+      Nigeria:
+      Because +234 is already displayed separately,
+      remove the local leading 0 if the user enters it.
+      Example:
+      08190876543 -> 8190876543
+    */
+    var selectedCountry = iti.getSelectedCountryData();
+
+    if (
+      selectedCountry &&
+      selectedCountry.iso2 === 'ng' &&
+      digitsOnly.charAt(0) === '0'
+    ) {
+      digitsOnly = digitsOnly.substring(1);
+    }
+
+    phoneInput.value = digitsOnly;
+
+    /*
+      Do not allow additional digits once the phone library
+      identifies the current number as too long for the
+      selected country.
+    */
+    if (
+      window.intlTelInputUtils &&
+      iti.getValidationError() ===
+        window.intlTelInputUtils.validationError.TOO_LONG
+    ) {
+      phoneInput.value = lastAcceptedPhoneValue;
+    } else {
+      lastAcceptedPhoneValue = phoneInput.value;
+    }
+
+    updatePhoneProgress();
+  }
+
+  phoneInput.addEventListener('input', handlePhoneInput);
+
+  phoneInput.addEventListener('countrychange', function () {
+    phoneInput.value = '';
+    lastAcceptedPhoneValue = '';
+    expectedNationalLength = getExpectedNationalLength();
+    updatePhoneProgress();
+  });
+
+  /*
+    Wait until the phone utility data has loaded before
+    calculating the selected country's expected length.
+  */
+  if (iti.promise && typeof iti.promise.then === 'function') {
+    iti.promise.then(function () {
+      expectedNationalLength = getExpectedNationalLength();
+      updatePhoneProgress();
     });
-
-    phoneInput.removeAttribute('placeholder');
   }
+}
 
-  function isPhoneValid() {
-    if (!phoneInput || !phoneInput.value.trim()) return false;
-    if (!iti) return false;
-    return iti.isValidNumber();
-  }
+function isPhoneValid() {
+  if (!phoneInput || !phoneInput.value.trim()) return false;
+  if (!iti) return false;
+  return iti.isValidNumber();
+}
 
   function setFieldError(fieldId, errorId, message) {
     var field = document.getElementById(fieldId);
